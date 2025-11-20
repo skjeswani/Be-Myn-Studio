@@ -19,7 +19,9 @@ export const generateCreativePrompts = async (
     imageCount: number,
     productName: string,
     productDetails: string,
-    instructions: string
+    instructions: string,
+    indianContext: boolean,
+    aspectRatio: string
 ): Promise<string[]> => {
     if (!process.env.API_KEY) {
         throw new Error("API_KEY environment variable not set.");
@@ -27,7 +29,7 @@ export const generateCreativePrompts = async (
 
     const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
     
-    const systemInstruction = `You are a world-class creative director for product photography. Your task is to generate distinct, professional, and photorealistic prompts for an AI image generator.
+    let systemInstruction = `You are a world-class creative director for product photography. Your task is to generate distinct, professional, and photorealistic prompts for an AI image generator.
 
 GUIDELINES:
 - The user will provide one or more reference images of the product. Your generated prompts must result in images that are visually consistent with ALL provided reference images, matching key details like color, shape, texture, and branding.
@@ -35,11 +37,18 @@ GUIDELINES:
 - Be explicit about background, lighting, product positioning, and camera angles.
 - If the user provides 'SPECIAL INSTRUCTIONS', incorporate them into the prompt. For example, if they say 'top-down', ensure the prompts describe a top-down camera angle.
 - Focus on clarity, photorealism, and rich, descriptive details.
-- Unless the user's theme specifies a different location or culture, generate scenes with a context relevant to modern India. This could include urban or rural settings, architecture, props, and cultural nuances.
 - Do NOT add extra scenes beyond what the user's theme describes. Keep the core meaning.
 - Replace the placeholder '{{PRODUCT_NAME}}' with the actual product name provided by the user.
 - The output MUST be a valid JSON array of strings.
 `;
+
+    if (aspectRatio !== '1:1') {
+        systemInstruction += `\n- COMPOSITION GUIDELINE: The desired aspect ratio is ${aspectRatio}. Ensure the generated prompts describe a composition that fits this format (e.g., "wide shot with negative space on sides" for 16:9, or "vertical composition with subject centered" for 9:16).`;
+    }
+
+    if (indianContext) {
+        systemInstruction += `\n- Unless the user's theme specifies a different location or culture, generate scenes with a context relevant to modern India. This could include urban or rural settings, architecture, props, and cultural nuances.`;
+    }
 
     const detailsSection = productDetails.trim() 
         ? `\nADDITIONAL PRODUCT DETAILS: "${productDetails.trim()}"`
@@ -54,6 +63,7 @@ GUIDELINES:
 USER'S THEME: "${theme}"${detailsSection}${instructionsSection}
 DESIRED STYLE: "${style}"
 MODEL: "${modelOption} a model"
+ASPECT RATIO: "${aspectRatio}"
 
 Here are examples of the high-quality, professional prompts I expect. Use them as a style guide:
 ${PROMPT_EXAMPLES}
@@ -84,8 +94,23 @@ Now, generate the ${imageCount} prompts based on the user's theme and style.
         
         return prompts;
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error generating creative prompts:", error);
+        
+        // Robustly extract the error message or code
+        const errorMsg = error?.message || error?.error?.message || JSON.stringify(error);
+        const errorCode = error?.error?.code || error?.status;
+
+        // Check for the specific permission denied error
+        if (
+            errorMsg.includes("PERMISSION_DENIED") || 
+            errorMsg.includes("does not have permission") || 
+            errorCode === 403 ||
+            errorMsg.includes("403")
+        ) {
+             throw new Error("Permission Denied: The API Key is invalid or the 'Generative Language API' is not enabled in your Google Cloud Project. Please check your .env file and Google Cloud Console.");
+        }
+
         throw new Error("Failed to generate creative prompts. The model may have returned an unexpected response.");
     }
 };

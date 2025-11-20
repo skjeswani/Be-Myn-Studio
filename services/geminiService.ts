@@ -96,17 +96,43 @@ const _generateSingleImage = async (
             },
         });
 
-        for (const part of response.candidates?.[0]?.content?.parts || []) {
-            if (part.inlineData) {
-                return part.inlineData.data;
-            }
+        // Check for content in the response
+        const candidate = response.candidates?.[0];
+        const imagePart = candidate?.content?.parts?.find(part => part.inlineData);
+
+        if (imagePart?.inlineData) {
+            return imagePart.inlineData.data;
         }
 
-        throw new Error("No image was generated in the response. The model may have refused the request.");
+        // If no image, provide a more detailed error based on response feedback
+        if (candidate?.finishReason && candidate.finishReason !== 'STOP') {
+             throw new Error(`Image generation failed. Reason: ${candidate.finishReason}. Please try adjusting your theme or instructions.`);
+        }
+        
+        if (response.promptFeedback?.blockReason) {
+            throw new Error(`Image generation was blocked. Reason: ${response.promptFeedback.blockReason}. Please try a different theme or instructions.`);
+        }
+        
+        // Fallback for unexpected empty response
+        throw new Error("No image was generated in the response. The model may have refused the request for an unknown reason.");
 
-    } catch (error) {
+    } catch (error: any) {
         console.error("Error generating image:", error);
-        throw new Error("Failed to generate image. The prompt may have been blocked. Check the console for more details.");
+        
+        // Safe error message extraction
+        const errorMessage = error?.message || error?.error?.message || JSON.stringify(error);
+
+        // Rethrow our specific, user-friendly error messages
+        if (errorMessage.startsWith('Image generation') || errorMessage.startsWith('Permission Denied')) {
+            throw error;
+        }
+
+        if (errorMessage.includes("PERMISSION_DENIED") || errorMessage.includes("403")) {
+             throw new Error("Permission Denied: The API Key is invalid or the 'Generative Language API' is not enabled. Please check your .env file.");
+        }
+
+        // For other errors (network, etc.), throw a generic message
+        throw new Error("An unexpected error occurred during image generation. Please check the console for details.");
     }
 };
 
@@ -119,6 +145,8 @@ export const generateImageBatch = async (
     productName: string,
     productDetails: string,
     instructions: string,
+    indianContext: boolean,
+    aspectRatio: string,
     onInitialPrompts: (prompts: string[]) => void,
     onImageGenerated: (image: GeneratedImage, index: number) => void
 ): Promise<void> => {
@@ -134,7 +162,9 @@ export const generateImageBatch = async (
         imageCount,
         productName,
         productDetails,
-        instructions
+        instructions,
+        indianContext,
+        aspectRatio
     );
     
     onInitialPrompts(creativePrompts);

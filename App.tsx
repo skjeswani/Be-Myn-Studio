@@ -20,6 +20,7 @@ const App: React.FC = () => {
     const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const [indianContext, setIndianContext] = useState<boolean>(false);
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme === 'light' || savedTheme === 'dark') {
@@ -70,6 +71,8 @@ const App: React.FC = () => {
                 productName,
                 productDetails,
                 instructions,
+                indianContext,
+                aspectRatio,
                 (prompts) => { // onInitialPrompts
                     const placeholderImages = prompts.map(prompt => ({
                         prompt: prompt,
@@ -92,59 +95,68 @@ const App: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [referenceImages, themePrompt, imageCount, style, modelOption, productName, productDetails, instructions]);
+    }, [referenceImages, themePrompt, imageCount, style, modelOption, productName, productDetails, instructions, indianContext, aspectRatio]);
 
     return (
-        <div className="min-h-screen text-gray-800 dark:text-gray-200 font-sans antialiased">
+        <div 
+            className="min-h-screen bg-white dark:bg-black text-gray-800 dark:text-gray-200 font-sans antialiased transition-colors duration-300"
+            style={{ backgroundColor: theme === 'light' ? '#ffffff' : '#000000' }}
+        >
             <Header 
                 toggleTheme={toggleTheme} 
                 theme={theme}
             />
-            <main className="flex-grow container mx-auto p-4 md:p-8 w-full">
-                <div className="max-w-xl mx-auto space-y-10">
-                    <ImageUploader 
-                        onProductSelect={handleProductSelection} 
-                        setProductName={setProductName}
-                        productName={productName}
-                        isLoading={isLoading}
-                        selectedReferenceUrls={referenceImages.map(img => img.url)}
-                        setProductDetails={setProductDetails}
-                    />
-                    <PromptControls
-                        theme={themePrompt}
-                        setTheme={setThemePrompt}
-                        productDetails={productDetails}
-                        setProductDetails={setProductDetails}
-                        instructions={instructions}
-                        setInstructions={setInstructions}
-                        style={style}
-                        setStyle={setStyle}
-                        modelOption={modelOption}
-                        setModelOption={setModelOption}
-                        imageCount={imageCount}
-                        setImageCount={setImageCount}
-                        aspectRatio={aspectRatio}
-                        setAspectRatio={setAspectRatio}
-                        onGenerate={handleGenerate}
-                        isLoading={isLoading}
-                        isImageSelected={referenceImages.length > 0}
-                    />
+            <div className="flex flex-col lg:grid lg:grid-cols-12 min-h-[calc(100vh-65px)]">
+                {/* Left Panel: Controls */}
+                <div className="lg:col-span-4 xl:col-span-3 border-b lg:border-b-0 lg:border-r border-gray-200 dark:border-gray-800 bg-white dark:bg-black p-6 overflow-y-auto h-auto lg:h-full">
+                    <div className="space-y-10">
+                        <ImageUploader 
+                            onProductSelect={handleProductSelection} 
+                            setProductName={setProductName}
+                            productName={productName}
+                            isLoading={isLoading}
+                            selectedReferenceUrls={referenceImages.map(img => img.url)}
+                            setProductDetails={setProductDetails}
+                        />
+                        <div className="w-full h-px bg-gray-200 dark:bg-gray-800 my-6"></div>
+                        <PromptControls
+                            theme={themePrompt}
+                            setTheme={setThemePrompt}
+                            productDetails={productDetails}
+                            setProductDetails={setProductDetails}
+                            instructions={instructions}
+                            setInstructions={setInstructions}
+                            style={style}
+                            setStyle={setStyle}
+                            modelOption={modelOption}
+                            setModelOption={setModelOption}
+                            imageCount={imageCount}
+                            setImageCount={setImageCount}
+                            aspectRatio={aspectRatio}
+                            setAspectRatio={setAspectRatio}
+                            indianContext={indianContext}
+                            setIndianContext={setIndianContext}
+                            onGenerate={handleGenerate}
+                            isLoading={isLoading}
+                            isImageSelected={referenceImages.length > 0}
+                        />
+                    </div>
                 </div>
 
-                <div className="mt-16">
-                    <ImageGallery
-                        images={generatedImages}
-                        isLoading={isLoading}
-                        error={error}
-                        baseImageUrl={referenceImages[0]?.url}
-                        productName={productName}
-                        aspectRatio={aspectRatio}
-                    />
+                {/* Right Panel: Gallery/Stage */}
+                <div className="lg:col-span-8 xl:col-span-9 bg-gray-50 dark:bg-gray-950 p-6 md:p-12 flex flex-col items-center justify-center overflow-y-auto h-auto lg:h-full">
+                    <div className="w-full max-w-4xl">
+                         <ImageGallery
+                            images={generatedImages}
+                            isLoading={isLoading}
+                            error={error}
+                            baseImageUrl={referenceImages[0]?.url}
+                            productName={productName}
+                            aspectRatio={aspectRatio}
+                        />
+                    </div>
                 </div>
-            </main>
-            <footer className="text-center p-6 text-gray-500 text-xs">
-                <p>Powered by Gemini 2.5 Flash Image. For personal use.</p>
-            </footer>
+            </div>
         </div>
     );
 };
