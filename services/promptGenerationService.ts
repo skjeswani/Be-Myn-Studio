@@ -108,7 +108,7 @@ Now, generate the ${imageCount} prompts based on the user's theme and style.
             errorCode === 403 ||
             errorMsg.includes("403")
         ) {
-             throw new Error("Permission Denied: The API Key is invalid or the 'Generative Language API' is not enabled in your Google Cloud Project. Please check your .env file and Google Cloud Console.");
+             throw new Error("Permission Denied: The API Key is invalid or the AI Service is not enabled. Please check your .env file and configuration.");
         }
 
         throw new Error("Failed to generate creative prompts. The model may have returned an unexpected response.");

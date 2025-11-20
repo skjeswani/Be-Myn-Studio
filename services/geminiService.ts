@@ -1,138 +1,67 @@
 
-import { GoogleGenAI, Modality } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 import { generateCreativePrompts } from './promptGenerationService';
 import type { GeneratedImage, BaseImage } from '../types';
 
 // Utility to convert file to base64 and return its object URL
 export const fileToImageObject = (file: File): Promise<BaseImage> => {
     return new Promise((resolve, reject) => {
-        const reader = new FileReader();
         const url = URL.createObjectURL(file);
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve({
-            base64: (reader.result as string).split(',')[1],
-            url: url,
-            mimeType: file.type,
-        });
-        reader.onerror = error => reject(error);
-    });
-};
-
-// Utility to fetch an image URL and convert it to base64
-export const urlToBase64 = async (url: string): Promise<{ base64: string, mimeType: string }> => {
-    const response = await fetch(url);
-    const blob = await response.blob();
-    const reader = new FileReader();
-    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
         reader.onload = () => {
-            const base64 = (reader.result as string).split(',')[1];
-            resolve({ base64, mimeType: blob.type });
+            const result = reader.result as string;
+            // extract base64 part
+            const base64 = result.split(',')[1];
+            const mimeType = file.type;
+            resolve({ base64, mimeType, url });
         };
-        reader.onerror = reject;
-        reader.readAsDataURL(blob);
+        reader.onerror = error => reject(error);
+        reader.readAsDataURL(file);
     });
 };
 
-export const identifyProductFromImage = async (
-    base64Image: string,
-    mimeType: string
-): Promise<string> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-    const prompt = "Identify the main product in this image. Provide a short, concise name for it (e.g., 'vintage camera', 'red sneakers').";
+// Utility to convert a remote URL to base64
+export const urlToBase64 = async (url: string): Promise<{ base64: string, mimeType: string }> => {
+    try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Failed to fetch image: ${response.statusText}`);
+        const blob = await response.blob();
+        
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => {
+                const result = reader.result as string;
+                const base64 = result.split(',')[1];
+                resolve({ base64, mimeType: blob.type });
+            };
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+        });
+    } catch (error) {
+        console.error("Error converting URL to base64:", error);
+        throw error;
+    }
+};
 
+export const identifyProductFromImage = async (base64: string, mimeType: string): Promise<string> => {
+    if (!process.env.API_KEY) throw new Error("API_KEY not set");
+    
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+    
     try {
         const response = await ai.models.generateContent({
             model: 'gemini-2.5-flash',
             contents: {
                 parts: [
-                    {
-                        inlineData: {
-                            data: base64Image,
-                            mimeType: mimeType,
-                        },
-                    },
-                    {
-                        text: prompt,
-                    },
-                ],
-            },
+                    { inlineData: { mimeType, data: base64 } },
+                    { text: "Identify this product. Return only the generic product name (e.g., 'Lipstick', 'Running Shoe'). Do not include brand names or extra adjectives." }
+                ]
+            }
         });
-        
-        return response.text.trim();
-
-    } catch (error) {
-        console.error("Error identifying product:", error);
-        return "Uploaded Product"; // Fallback on error
-    }
-};
-
-
-const _generateSingleImage = async (
-    referenceImages: { base64: string, mimeType: string }[],
-    prompt: string
-): Promise<string> => {
-    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
-
-    try {
-        const imageParts = referenceImages.map(image => ({
-            inlineData: {
-                data: image.base64,
-                mimeType: image.mimeType,
-            },
-        }));
-
-        const response = await ai.models.generateContent({
-            model: 'gemini-2.5-flash-image',
-            contents: {
-                parts: [
-                    ...imageParts,
-                    {
-                        text: prompt,
-                    },
-                ],
-            },
-            config: {
-                responseModalities: [Modality.IMAGE],
-            },
-        });
-
-        // Check for content in the response
-        const candidate = response.candidates?.[0];
-        const imagePart = candidate?.content?.parts?.find(part => part.inlineData);
-
-        if (imagePart?.inlineData) {
-            return imagePart.inlineData.data;
-        }
-
-        // If no image, provide a more detailed error based on response feedback
-        if (candidate?.finishReason && candidate.finishReason !== 'STOP') {
-             throw new Error(`Image generation failed. Reason: ${candidate.finishReason}. Please try adjusting your theme or instructions.`);
-        }
-        
-        if (response.promptFeedback?.blockReason) {
-            throw new Error(`Image generation was blocked. Reason: ${response.promptFeedback.blockReason}. Please try a different theme or instructions.`);
-        }
-        
-        // Fallback for unexpected empty response
-        throw new Error("No image was generated in the response. The model may have refused the request for an unknown reason.");
-
-    } catch (error: any) {
-        console.error("Error generating image:", error);
-        
-        // Safe error message extraction
-        const errorMessage = error?.message || error?.error?.message || JSON.stringify(error);
-
-        // Rethrow our specific, user-friendly error messages
-        if (errorMessage.startsWith('Image generation') || errorMessage.startsWith('Permission Denied')) {
-            throw error;
-        }
-
-        if (errorMessage.includes("PERMISSION_DENIED") || errorMessage.includes("403")) {
-             throw new Error("Permission Denied: The API Key is invalid or the 'Generative Language API' is not enabled. Please check your .env file.");
-        }
-
-        // For other errors (network, etc.), throw a generic message
-        throw new Error("An unexpected error occurred during image generation. Please check the console for details.");
+        return response.text?.trim() || "Product";
+    } catch (e) {
+        console.error("Identification failed", e);
+        return "Product";
     }
 };
 
@@ -149,33 +78,101 @@ export const generateImageBatch = async (
     aspectRatio: string,
     onInitialPrompts: (prompts: string[]) => void,
     onImageGenerated: (image: GeneratedImage, index: number) => void
-): Promise<void> => {
-    if (!process.env.API_KEY) {
-        throw new Error("API_KEY environment variable not set. Please set it in your environment.");
-    }
-
-    // Step 1: Generate creative prompts
-    const creativePrompts = await generateCreativePrompts(
-        theme,
-        style,
-        modelOption,
-        imageCount,
-        productName,
-        productDetails,
-        instructions,
-        indianContext,
-        aspectRatio
+) => {
+    // 1. Generate Prompts
+    const prompts = await generateCreativePrompts(
+        theme, style, modelOption, imageCount, productName, productDetails, instructions, indianContext, aspectRatio
     );
     
-    onInitialPrompts(creativePrompts);
+    onInitialPrompts(prompts);
 
-    // Step 2: Generate an image for each creative prompt, calling back as each one completes
-    const generationPromises = creativePrompts.map((prompt, index) => 
-        _generateSingleImage(referenceImages, prompt).then(imageData => {
-            onImageGenerated({ prompt, imageData }, index);
-        })
-    );
+    // 2. Generate Images one by one (streaming effect)
+    const generatePromises = prompts.map(async (prompt, index) => {
+        try {
+            const generatedImage = await _generateSingleImage(referenceImages, prompt, aspectRatio);
+            onImageGenerated(generatedImage, index);
+        } catch (error: any) {
+            console.error(`Failed to generate image ${index + 1}:`, error);
+            // We still return a placeholder with error indication if needed, or just let the UI handle the missing image state
+             onImageGenerated({ prompt: prompt, imageData: '' }, index);
+        }
+    });
 
-    // Wait for all promises to resolve to complete the process
-    await Promise.all(generationPromises);
+    await Promise.allSettled(generatePromises);
+};
+
+const _generateSingleImage = async (
+    referenceImages: BaseImage[],
+    prompt: string,
+    aspectRatio: string
+): Promise<GeneratedImage> => {
+    if (!process.env.API_KEY) throw new Error("API_KEY not set");
+
+    const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+
+    // Prepare contents: Text Prompt + All Reference Images
+    const parts: any[] = [
+        { text: prompt }
+    ];
+
+    referenceImages.forEach(img => {
+        parts.push({
+            inlineData: {
+                mimeType: img.mimeType,
+                data: img.base64
+            }
+        });
+    });
+
+    const config: any = {
+         imageConfig: {
+             aspectRatio: aspectRatio,
+         }
+    };
+
+    try {
+        const response = await ai.models.generateContent({
+            model: 'gemini-2.5-flash-image',
+            contents: { parts },
+            config: config
+        });
+
+        // Extract Image
+        let base64Image = '';
+        if (response.candidates && response.candidates.length > 0) {
+             const content = response.candidates[0].content;
+             if (content && content.parts) {
+                 for (const part of content.parts) {
+                     if (part.inlineData && part.inlineData.data) {
+                         base64Image = part.inlineData.data;
+                         break;
+                     }
+                 }
+             }
+        }
+
+        if (!base64Image) {
+            // Check for refusal/safety
+            const finishReason = response.candidates?.[0]?.finishReason;
+            if (finishReason) {
+                 throw new Error(`Model refused to generate image. Reason: ${finishReason}`);
+            }
+            throw new Error("No image generated.");
+        }
+
+        return {
+            prompt: prompt,
+            imageData: base64Image
+        };
+
+    } catch (error: any) {
+        let message = error.message || "Unknown error";
+        // Provide more user-friendly messages for common errors
+        if (message.includes("400")) {
+             message = "The model refused the request. Please try a different prompt or fewer reference images.";
+        } else if (message.includes("SAFETY")) {
+             message = "Generation blocked by safety filters. Please adjust your prompt.";
+        }
+        throw new Error(message);
+    }
 };
