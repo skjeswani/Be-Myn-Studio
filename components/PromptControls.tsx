@@ -18,6 +18,8 @@ interface PromptControlsProps {
     setAspectRatio: (ratio: string) => void;
     indianContext: boolean;
     setIndianContext: (enabled: boolean) => void;
+    onAppMode: boolean;
+    setOnAppMode: (enabled: boolean) => void;
     onGenerate: () => void;
     isLoading: boolean;
     isImageSelected: boolean;
@@ -58,6 +60,8 @@ const PromptControls: React.FC<PromptControlsProps> = ({
     setAspectRatio,
     indianContext,
     setIndianContext,
+    onAppMode,
+    setOnAppMode,
     onGenerate,
     isLoading,
     isImageSelected
@@ -227,6 +231,31 @@ const PromptControls: React.FC<PromptControlsProps> = ({
                 </div>
                  <div className="flex items-center justify-between pt-2">
                     <div>
+                        <label htmlFor="on-app-toggle" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                            On-App Imagery
+                        </label>
+                        <p className="text-xs text-gray-500 font-normal">Generate with In-SOP's</p>
+                    </div>
+                    <button
+                        type="button"
+                        id="on-app-toggle"
+                        onClick={() => setOnAppMode(!onAppMode)}
+                        disabled={isLoading}
+                        className={`relative inline-flex items-center h-6 rounded-full w-11 transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-black disabled:opacity-50 ${
+                            onAppMode ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
+                        }`}
+                        role="switch"
+                        aria-checked={onAppMode}
+                    >
+                        <span
+                            className={`inline-block w-4 h-4 transform bg-white rounded-full transition-transform ${
+                                onAppMode ? 'translate-x-6' : 'translate-x-1'
+                            }`}
+                        />
+                    </button>
+                </div>
+                 <div className="flex items-center justify-between pt-2">
+                    <div>
                         <label htmlFor="indian-context-toggle" className="text-sm font-medium text-gray-700 dark:text-gray-300">
                             Indian Context
                         </label>
@@ -259,7 +288,7 @@ const PromptControls: React.FC<PromptControlsProps> = ({
             >
                 {isLoading ? (
                     <>
-                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="http://www.w3.org/2000/svg">
+                        <svg className="animate-spin -ml-1 mr-3 h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 2000/svg">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                             <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                         </svg>

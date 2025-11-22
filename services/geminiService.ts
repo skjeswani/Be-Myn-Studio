@@ -75,13 +75,14 @@ export const generateImageBatch = async (
     productDetails: string,
     instructions: string,
     indianContext: boolean,
+    onAppMode: boolean,
     aspectRatio: string,
     onInitialPrompts: (prompts: string[]) => void,
     onImageGenerated: (image: GeneratedImage, index: number) => void
 ) => {
     // 1. Generate Prompts
     const prompts = await generateCreativePrompts(
-        theme, style, modelOption, imageCount, productName, productDetails, instructions, indianContext, aspectRatio
+        theme, style, modelOption, imageCount, productName, productDetails, instructions, indianContext, onAppMode, aspectRatio
     );
     
     onInitialPrompts(prompts);

@@ -140,14 +140,14 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onProductSelect, setProdu
                             key={product.name}
                             onClick={() => handleProductToggle(product)}
                             disabled={isLoading || isProductLoading}
-                            className={`group relative flex flex-col transition-all duration-200 focus:outline-none ${
+                            className={`group relative flex flex-col transition-all duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-black rounded-lg ${
                                 isLoading || isProductLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
                             }`}
                         >
                             <div className={`relative w-full aspect-square overflow-hidden rounded-lg border-2 transition-all duration-200 ${
                                 isSelected
                                     ? 'border-black dark:border-white'
-                                    : 'border-transparent group-hover:border-gray-300 dark:group-hover:border-gray-700'
+                                    : 'border-gray-200 dark:border-gray-800 group-hover:border-gray-400 dark:group-hover:border-gray-600'
                             }`}>
                                 <img 
                                     src={product.imageUrls[0]} 
@@ -163,7 +163,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onProductSelect, setProdu
                                     </div>
                                 )}
                             </div>
-                            <span className={`mt-2 text-xs uppercase tracking-wider font-medium text-center transition-colors ${
+                            <span className={`mt-1.5 text-xs uppercase tracking-wider font-medium text-center transition-colors ${
                                 isSelected ? 'text-black dark:text-white font-bold' : 'text-gray-500 group-hover:text-gray-900 dark:group-hover:text-gray-300'
                             }`}>
                                 {product.name}
@@ -182,7 +182,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onProductSelect, setProdu
                          {isUploaded && selectedReferenceUrls.length > 0 ? (
                              <img src={selectedReferenceUrls[0]} alt="Uploaded" className="w-full h-full object-cover rounded-lg opacity-75" />
                          ) : (
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
                             </svg>
                          )}
@@ -194,7 +194,7 @@ const ImageUploader: React.FC<ImageUploaderProps> = ({ onProductSelect, setProdu
                             </div>
                          )}
                     </div>
-                    <span className={`mt-2 text-xs uppercase tracking-wider font-medium text-center transition-colors ${isUploaded ? 'text-black dark:text-white font-bold' : 'text-gray-500 group-hover:text-gray-900 dark:group-hover:text-gray-300'}`}>
+                    <span className={`mt-1.5 text-xs uppercase tracking-wider font-medium text-center transition-colors ${isUploaded ? 'text-black dark:text-white font-bold' : 'text-gray-500 group-hover:text-gray-900 dark:group-hover:text-gray-300'}`}>
                         {isUploaded ? 'Custom' : 'Upload'}
                     </span>
                 </button>

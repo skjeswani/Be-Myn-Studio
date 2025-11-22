@@ -21,6 +21,7 @@ const App: React.FC = () => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
     const [indianContext, setIndianContext] = useState<boolean>(false);
+    const [onAppMode, setOnAppMode] = useState<boolean>(false);
     const [theme, setTheme] = useState<'light' | 'dark'>(() => {
         const savedTheme = localStorage.getItem('theme');
         if (savedTheme === 'light' || savedTheme === 'dark') {
@@ -72,6 +73,7 @@ const App: React.FC = () => {
                 productDetails,
                 instructions,
                 indianContext,
+                onAppMode,
                 aspectRatio,
                 (prompts) => { // onInitialPrompts
                     const placeholderImages = prompts.map(prompt => ({
@@ -95,7 +97,7 @@ const App: React.FC = () => {
         } finally {
             setIsLoading(false);
         }
-    }, [referenceImages, themePrompt, imageCount, style, modelOption, productName, productDetails, instructions, indianContext, aspectRatio]);
+    }, [referenceImages, themePrompt, imageCount, style, modelOption, productName, productDetails, instructions, indianContext, onAppMode, aspectRatio]);
 
     return (
         <div 
@@ -136,6 +138,8 @@ const App: React.FC = () => {
                             setAspectRatio={setAspectRatio}
                             indianContext={indianContext}
                             setIndianContext={setIndianContext}
+                            onAppMode={onAppMode}
+                            setOnAppMode={setOnAppMode}
                             onGenerate={handleGenerate}
                             isLoading={isLoading}
                             isImageSelected={referenceImages.length > 0}

@@ -21,6 +21,7 @@ export const generateCreativePrompts = async (
     productDetails: string,
     instructions: string,
     indianContext: boolean,
+    onAppMode: boolean,
     aspectRatio: string
 ): Promise<string[]> => {
     if (!process.env.API_KEY) {
@@ -41,6 +42,13 @@ GUIDELINES:
 - Replace the placeholder '{{PRODUCT_NAME}}' with the actual product name provided by the user.
 - The output MUST be a valid JSON array of strings.
 `;
+
+    if (onAppMode) {
+        systemInstruction += `\n- ON-APP VISUAL GUIDELINES:
+  - Adhere to character limits for text, both within the content space and inside imagery.
+  - Maintain consistency in font size, position, color, and weight.
+  - Ensure key image elements remain within the defined safe areas and are not cropped.`;
+    }
 
     if (aspectRatio !== '1:1') {
         systemInstruction += `\n- COMPOSITION GUIDELINE: The desired aspect ratio is ${aspectRatio}. Ensure the generated prompts describe a composition that fits this format (e.g., "wide shot with negative space on sides" for 16:9, or "vertical composition with subject centered" for 9:16).`;

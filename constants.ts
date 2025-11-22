@@ -124,4 +124,28 @@ Benefits:
       'https://assets.myntassets.com/h_720,q_90,w_540/v1/assets/images/2025/NOVEMBER/12/sjqW0z0u_2411b52c89f54f4182fced28fe468a82.jpg'
     ]
   },
+  {
+    name: 'Liquid Lipstick',
+    details: `Shades: Naughty Nude (LL01) · Coral Crush (LL03) · Mocha Mystery (LL06) · Pink Poetry (LL07) · Passion Pink (LL08) · Crimson Craze (LL11) · Plum Pleasure (LL12)
+
+Details: Long-wear formula promising up to 12 hours stay. Transfer-proof liquid lip colour (i.e., minimal transfer when eating/drinking). Available in approx. 4.5 mL packaging.
+
+Benefits:
+- Extended wear time: Good for all-day use without frequent touch-ups.
+- Transfer-proof: Helps maintain the lip colour even when you eat/drink or talk.
+- Variety of shades: Offers options from nudes to bolds to match different looks/moods.
+- Liquid formula: Typically gives a smooth finish and can feel lightweight.`,
+    imageUrls: [
+      'https://assets.myntassets.com/h_200,w_200,c_fill,g_auto/h_1440,q_75,w_1080/v1/assets/images/2025/SEPTEMBER/29/CPd3bJaZ_931eca64c4844f9f991a84710c6d4909.jpg',
+      'https://assets.myntassets.com/h_720,q_90,w_540/v1/assets/images/2025/SEPTEMBER/29/uI5QoVkI_f4b774aaaa744f92b685ec3aaeb77712.jpg',
+      'https://assets.myntassets.com/h_720,q_90,w_540/v1/assets/images/2025/SEPTEMBER/29/ahOjON7E_06e3423e999e4d1a92d8296c1476728a.jpg',
+      'https://assets.myntassets.com/h_720,q_90,w_540/v1/assets/images/2025/SEPTEMBER/29/7mdujA13_45a585c0ddc04a459336d71c3ce972e8.jpg',
+      'https://assets.myntassets.com/h_720,q_90,w_540/v1/assets/images/2025/SEPTEMBER/29/j6Glanpk_96aa4d6f57dd45289ac0fc895a24f5ef.jpg',
+      'https://assets.myntassets.com/h_720,q_90,w_540/v1/assets/images/2025/SEPTEMBER/29/TIzLEC35_764a81328fe448da8b3cea53e597377e.jpg',
+      'https://assets.myntassets.com/h_720,q_90,w_540/v1/assets/images/2025/OCTOBER/3/pYlBxitV_bf09d86a3bc640b1826289cafcc065b4.jpg',
+      'https://assets.myntassets.com/h_720,q_90,w_540/v1/assets/images/2025/OCTOBER/3/SM2wWtbi_28b63cfd53654c208fa74c8b9e4c13b2.jpg',
+      'https://assets.myntassets.com/h_720,q_90,w_540/v1/assets/images/2025/OCTOBER/3/xxQ7XIVL_9ab78afa796645ddba46cf56031a409f.jpg',
+      'https://assets.myntassets.com/h_720,q_90,w_540/v1/assets/images/2025/OCTOBER/3/0eWtxeMc_a61899ce4115424cbe0c8496793156e1.jpg'
+    ]
+  },
 ];

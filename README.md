@@ -45,7 +45,7 @@ Follow these instructions to run Be!Myn Studio on your local machine.
 
 *   **Node.js**: Ensure you have Node.js (v18 or higher) installed.
 *   **Google API Key**: You need a valid API key from [Google AI Studio](https://aistudio.google.com/).
-    *   *Note: Ensure your API key has access to the Gemini 2.5 Flash and Image Generation models.*
+    *   *Note: Ensure your API key has access to the `gemini-2.5-flash` and `gemini-2.5-flash-image` models.*
 
 ### Installation Steps
 
